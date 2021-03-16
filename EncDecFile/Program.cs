@@ -13,7 +13,7 @@ namespace EncDecFile
     class Program
     {
         static int versionMajor = 1;
-        static int versionMinor = 1;
+        static int versionMinor = 2;
         static int versionRevision = 0;
 
 
@@ -55,16 +55,11 @@ namespace EncDecFile
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="error"></param>
-        /// <param name="detail"></param>
+ 
         static void printError(string name, string error, string detail)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write("" + error + ": ");
+            Console.Write(error + ": ");
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write("\'" + name + "\' ");
             Console.ForegroundColor = ConsoleColor.Red;
@@ -72,6 +67,24 @@ namespace EncDecFile
             Console.ForegroundColor = ConsoleColor.White;
         }
 
+        static void printInfo(string str1, string str2)
+        {
+			Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(str1);
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(str2);
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+		
+        static void printProgress(string str1, string str2)
+        {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.Write(str1);
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.Write(str2);
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+		
         static void usage()
         {
             Console.ForegroundColor = ConsoleColor.White;
@@ -286,12 +299,9 @@ namespace EncDecFile
                 printError("Permision denied", "EncDecFile", "You need to be part of the gudepssii to run this programm");
                 return;
             }
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("Input string: ");
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("{0}", filename);
-            Console.ForegroundColor = ConsoleColor.White;
-
+			
+			printInfo("Input string: ", filename);
+			
             try {
                 processFile(filename);
                 // the code that you want to measure comes here
