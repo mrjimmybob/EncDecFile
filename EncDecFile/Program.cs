@@ -7,20 +7,23 @@ using System.DirectoryServices.AccountManagement;
 using System.Linq;
 
 using System.Security.Principal;
+using System.Globalization;
 
 namespace EncDecFile
 {
     class Program
     {
-        static int versionMajor = 2;
+        static int versionMajor = 3;
         static int versionMinor = 0;
         static int versionRevision = 0;
 
-        enum EncDec
+        enum Operation
         {
             Auto,
             Decrypt,
-            Encrypt
+            Encrypt,
+            String,
+            Error
         }
 
         static public string[] GetGroupNames(string domainName, string userName)
@@ -82,15 +85,14 @@ namespace EncDecFile
             Console.ForegroundColor = ConsoleColor.White;
         }
 		
-        static void printProgress(string str1, string str2)
+        static void printProgress(string status)
         {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.Write(str1);
             Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.Write(str2);
+            Console.Write(status);
             Console.ForegroundColor = ConsoleColor.White;
+
         }
-		
+
         static void usage()
         {
             Console.ForegroundColor = ConsoleColor.White;
@@ -133,6 +135,12 @@ namespace EncDecFile
             Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.Write("outputfile");
             Console.WriteLine("]");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("    EncDecFile ");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write("-s ");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine("string");
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Options:");
             Console.WriteLine("    -d filename   Decrypts config file filename.");
@@ -140,7 +148,8 @@ namespace EncDecFile
             Console.WriteLine("    -a filename   Auto encrypt or decrypt filename.");
             Console.WriteLine("                  If filename is encrypted it is decrypted, and if it is plain text it is encrypted.");
             Console.WriteLine("    -o outputfile Write output to outputfile.");
-            Console.WriteLine("If no outputfile is given with -o, output file will be auto named.");
+            Console.WriteLine("    -s string     Encrypt and Decrypt string, print output to standard output");
+            Console.WriteLine("If no outputfile is given with -o, the output file will be auto named.");
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.Write("Third ");
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -165,7 +174,7 @@ namespace EncDecFile
                 int numExt = 0;
                 do
                 {
-                    ext = numExt.ToString();
+                    ext = numExt.ToString(CultureInfo.InvariantCulture);
                     ++numExt;
                 } while (File.Exists(outputFilename + ext));
                 outputFilename = outputFilename + ext;
@@ -174,20 +183,32 @@ namespace EncDecFile
             return outputFilename;
         }
 
-        static int processFile(EncDec encDec, string inputFilename, string outputFilename)
+        /*
+         <****add**** name = "GestionReclamosGarantia.Properties.Settings.AS400InformesConnectionString"
+              ****connectionString**** = "Data Source=SLPA04;Initial Catalog=AS400Informes;Integrated Security=True"
+              providerName = "System.Data.SqlClient"/>
+
+        <add key="ServerName" value="SLPA04"/>
+         
+         */
+        static int processFile(Operation encDec, string inputFilename, string outputFilename)
         {
             string[] lines = File.ReadAllLines(inputFilename);
-            string connectionString = null;
+            string candidateString = null;
 
             bool foundAdd = false;
             int foundAddAt = 0;
-            bool foundConnectionString = false;
-            int foundConnectionStringAt = 0;
+            bool foundCandidateString = false;
+            int foundCandidateStringAt = 0;
+ 
 
             int foundStringAt = 0;
             int numEncrypted = 0;
             int numDecrypted = 0;
+            int numTryDecrypted = 0;
             int numOther = 0;
+
+            int errno = 0;
 
             outputFilename = createOutputFilename(inputFilename, outputFilename);
 
@@ -195,18 +216,18 @@ namespace EncDecFile
 
             using (System.IO.StreamWriter outputFile = new System.IO.StreamWriter(outputFilename)) {
                 foundAdd = false;
-                foundConnectionString = false;
+                foundCandidateString = false;
 
 
-                if (encDec == EncDec.Auto)
+                if (encDec == Operation.Auto)
                 {
-                    printInfo("Action: ", "Automatic detection (Auto)");
+                    printInfo("Action: ", "Automatic detection (not reliable)");
                 }
-                if (encDec == EncDec.Decrypt)
+                if (encDec == Operation.Decrypt)
                 {
                     printInfo("Action: ", "Decrypting");
                 }
-                if (encDec == EncDec.Encrypt)
+                if (encDec == Operation.Encrypt)
                 {
                     printInfo("Action: ", "Encrypting");
                 }
@@ -218,69 +239,108 @@ namespace EncDecFile
                 foreach (string line in lines) {
                     /* You need to look for 'add' and after a 
                      * 'connectionString' the next string after is the connection string 
+                     *  or look for 'value' after a 'appSetting'
                      */
                     foundAddAt = line.IndexOf("add", System.StringComparison.Ordinal);
                     if (foundAddAt != -1) {
                         foundAdd = true;
                     }
-                    foundConnectionStringAt = line.IndexOf("connectionString", System.StringComparison.Ordinal);
-                    if (foundConnectionStringAt != -1
-                        && foundConnectionStringAt > foundAddAt
-                        && foundAdd == true) {
-                        // the connectionString must come after the add
-                        foundConnectionString = true;
+ 
+                    int foundConnectionStringAt = line.IndexOf("connectionString", System.StringComparison.Ordinal);
+                    int foundValueStringAt = line.IndexOf("value", System.StringComparison.Ordinal);
+                    if (foundValueStringAt >= 0)
+                    {
+                        foundCandidateStringAt = foundValueStringAt;
+                        // If the foundConnectionStringAt is also >= 0, the foundValueStringAt will have no effect (overwriten in next test).
                     }
-                    if (foundConnectionString && foundAdd)
+                    if (foundConnectionStringAt >= 0)
+                    {
+                        foundCandidateStringAt = foundConnectionStringAt;
+                    }
+                    if (foundCandidateStringAt != -1 && foundCandidateStringAt > foundAddAt && foundAdd == true) {
+                        // the 'connectionString' or 'value' must come after the 'add' key
+                        foundCandidateString = true;
+                    }
+                    if ((foundCandidateString && foundAdd))
                     {
                         // After finding add and the connections string
-                        foundStringAt = line.IndexOf("\"", foundConnectionStringAt,
-                                System.StringComparison.Ordinal);
-                        if (foundStringAt != -1
-                            && foundStringAt > foundConnectionStringAt)
+                        foundStringAt = line.IndexOf("\"", foundCandidateStringAt, System.StringComparison.Ordinal);
+                        if (foundStringAt != -1 && foundStringAt > foundCandidateStringAt)
                         {
-
                             int j = foundStringAt + 1;
                             while (j < line.Length && !line[j].Equals('"')) {
                                 //Console.Write(line[j]);
                                 j++;
                             }
 
-                            connectionString = line.Substring(foundStringAt + 1,
-                                    (j - foundStringAt - 1));
+                            candidateString = line.Substring(foundStringAt + 1, (j - foundStringAt - 1));
 
                             Encryptor enc = new Encryptor();
-                            string result;
+                            string result = candidateString;
 
-                            if (encDec == EncDec.Auto)
+                            if (encDec == Operation.Auto)
                             {
-                                if (connectionString.Contains(";"))
+                                bool autoDecrypted = false;
+                                try
                                 {
-                                    // If the connection string has a ; it is not encrypted, so we will encrypt it
-                                    encDec = EncDec.Encrypt;
+                                    // Try to decrypt
+                                    result = enc.Decrypt(candidateString, true);
+                                    ++numDecrypted;
+                                    autoDecrypted = true;
+                                    printProgress("d");
                                 }
-                                else
+                                catch
                                 {
-                                    encDec = EncDec.Decrypt;
+                                    // If decryption fails, it is because it is not encrypted... Encrypt.
+                                    result = candidateString;
+                                }
+                                if (!autoDecrypted)
+                                {
+                                    // Not been auto decrypted... we should auto encrypt
+                                    try
+                                    {
+                                        result = enc.Encrypt(candidateString, true);
+                                        ++numEncrypted;
+                                        printProgress("e");
+                                    }
+                                    catch
+                                    {
+                                        // Ignore and cary on processing file, just puke out input line
+                                        result = candidateString;
+                                    }
                                 }
                             }
-
-                            if (encDec == EncDec.Encrypt)
+                            if (encDec == Operation.Encrypt)
                             {
                                 // We want to encrypt
-                                result = enc.Encrypt(connectionString, true);
-                                ++numEncrypted;
-                                Console.ForegroundColor = ConsoleColor.Magenta;
-                                Console.Write("e");
-                                Console.ForegroundColor = ConsoleColor.White;
+                                try
+                                {
+                                    result = enc.Encrypt(candidateString, true);
+                                    ++numEncrypted;
+                                    printProgress("e");
+                                }
+                                catch 
+                                {
+                                    // Ignore and cary on processing file, just puke out input line
+                                    result = candidateString;
+                                    printProgress("=");
+                                }
                             }
-                            else
+                            if (encDec == Operation.Decrypt)
                             {
                                 // We want to decrypt
-                                result = enc.Decrypt(connectionString, true);
-                                ++numDecrypted;
-                                Console.ForegroundColor = ConsoleColor.Magenta;
-                                Console.Write("d");
-                                Console.ForegroundColor = ConsoleColor.White;
+                                try { 
+                                    result = enc.Decrypt(candidateString, true);
+                                    ++numDecrypted;
+                                    printProgress("d");
+                                }
+                                catch 
+                                {
+                                    // Ignore and cary on processing file, just puke out input line
+                                    result = candidateString;
+                                    ++numTryDecrypted;
+                                    printProgress("=");
+                                }
                             }
 
                             // write line to output file
@@ -288,23 +348,37 @@ namespace EncDecFile
 
                             string str1 = line.Substring(0, foundStringAt + 1);
                             string str2 = result;
-                            string str3 = line.Substring(foundStringAt + connectionString.Length + 1,
-                                (line.Length - (foundStringAt + connectionString.Length + 1)));
+                            string str3 = line.Substring(foundStringAt + candidateString.Length + 1,
+                                (line.Length - (foundStringAt + candidateString.Length + 1)));
 
-                            outputFile.Write(str1);
-                            outputFile.Write(str2);
-                            outputFile.WriteLine(str3);
+                            try {
+                                outputFile.Write(str1);
+                                outputFile.Write(str2);
+                                outputFile.WriteLine(str3);
+                            }
+                            catch (Exception ex)
+                            {
+                                errno = -1;
+                                printError(outputFilename, "Error processing file", ex.Message);
+                            }
 
                             // Reset values and search for next
-                            foundAdd = foundConnectionString = false;
-                            foundAddAt = foundConnectionStringAt = foundStringAt = -1;
-                            connectionString = null;
+                            foundAdd = foundCandidateString = false;
+                            foundAddAt = foundCandidateStringAt = foundStringAt = -1;
+                            candidateString = null;
                         }
                     }
                     else {
                         // Found nothing, just writ eline
-                        outputFile.WriteLine(line);
-
+                        try
+                        {
+                            outputFile.WriteLine(line);
+                        }
+                        catch (Exception ex)
+                        {
+                            errno = -1;
+                            printError(outputFilename, "Error processing file", ex.Message);
+                        }
                         ++numOther;
 
                         Console.ForegroundColor = ConsoleColor.Magenta;
@@ -314,15 +388,28 @@ namespace EncDecFile
                 }
             }
             Console.WriteLine("");
+            if (numDecrypted > 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.Write("Decrypted (d): ");
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine(numDecrypted + " string" + (numDecrypted == 1 ? "" : "s"));
+            }
+            if (numTryDecrypted > 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.Write("Tried to decrypt non encrypted (=): ");
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine(numTryDecrypted + " string" + (numTryDecrypted == 1 ? "" : "s"));
 
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.Write("Decrypted: ");
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine(numDecrypted + " string" + (numDecrypted == 1 ? "" : "s"));
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.Write("Encrypted: ");
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine(numEncrypted + " string" + (numEncrypted == 1 ? "" : "s"));
+            }
+            if (numEncrypted > 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.Write("Encrypted (e): ");
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine(numEncrypted + " string" + (numEncrypted == 1 ? "" : "s"));
+            }
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write("From a total of: ");
             Console.ForegroundColor = ConsoleColor.Magenta;
@@ -332,7 +419,7 @@ namespace EncDecFile
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine(outputFilename);
             Console.ForegroundColor = ConsoleColor.White;
-            return 1;
+            return errno;
         }
 
         static bool isDirectory(string path)
@@ -354,7 +441,7 @@ namespace EncDecFile
                 // If not 2 or 4 arguments, get out
                 return null;
             }
-            // You MUST have 2 or 4 arguments
+            // You MUST have 2 or 4 arguments (here at least 2 exist)
             if (args[0].Equals("-d", StringComparison.InvariantCulture) 
                 || args[0].Equals("-e", StringComparison.InvariantCulture)
                 || args[0].Equals("-a", StringComparison.InvariantCulture))
@@ -398,128 +485,198 @@ namespace EncDecFile
                     return args[3];
                 }
             }
+            // If you did not find the -o return null
             return null;
         }
 
-        static EncDec getEncrypt(string[] args)
+        static void encryptDecryptString(string argumentString)
+        {
+            Encryptor enc = new Encryptor();
+            String encryptedString = "";
+            String decryptedString = "";
+            bool stringIsEncrypted = false;
+            try
+            {
+                decryptedString = enc.Decrypt(argumentString, true);
+                printInfo("Decrypted String: ", decryptedString);
+                // Hack, you cannon decrypt a non encrypted string
+                stringIsEncrypted = true; // I got here, so it did not fail (string is encrypted)
+            }
+            catch
+            {
+                // Ignore
+            }
+            if (!stringIsEncrypted) { 
+                // Do not try to encrypt an already encrypted string
+                try
+                {
+                    encryptedString = enc.Encrypt(argumentString, true);
+                    printInfo("Encrypted String: ", encryptedString);
+                }
+                catch { 
+                    // Ignore
+                }
+            }
+        }
+
+        static Operation getOperationType(string[] args)
         {
             if (args.Length < 2 || args.Length > 4 || args.Length == 3)
             {
                 // If not 2 or 4 arguments, get out
-                return EncDec.Auto;
+                return Operation.Error;
             }
             // You MUST have 2 or 4 arguments
             if (args[0].Equals("-d", StringComparison.InvariantCulture) 
                 || args[0].Equals("-e", StringComparison.InvariantCulture)
-                || args[0].Equals("-a", StringComparison.InvariantCulture))
+                || args[0].Equals("-a", StringComparison.InvariantCulture)
+                || args[0].Equals("-s", StringComparison.InvariantCulture))
             {
                 if (args[0].Equals("-e", StringComparison.InvariantCulture))
                 {
-                    return (EncDec.Encrypt);
+                    return (Operation.Encrypt);
                 }
                 if (args[0].Equals("-d", StringComparison.InvariantCulture))
                 {
-                    return (EncDec.Decrypt);
+                    return (Operation.Decrypt);
                 }
                 if (args[0].Equals("-a", StringComparison.InvariantCulture))
                 {
-                    return (EncDec.Auto);
+                    return (Operation.Auto);
+                }
+                if (args[0].Equals("-s", StringComparison.InvariantCulture))
+                {
+                    return (Operation.String);
                 }
             }
             if (args.Length == 4)
             {
                 // If we have 4 arguments, the input file could be the second argument
+                // But the user can only use -s with 2 args.
                 if (args[2].Equals("-d", StringComparison.InvariantCulture) 
                     || args[2].Equals("-e", StringComparison.InvariantCulture)
                     || args[2].Equals("-a", StringComparison.InvariantCulture))
                 {
                     if (args[2].Equals("-e", StringComparison.InvariantCulture))
                     {
-                        return (EncDec.Encrypt);
+                        return (Operation.Encrypt);
                     }
                     if (args[2].Equals("-d", StringComparison.InvariantCulture))
                     {
-                        return (EncDec.Decrypt);
+                        return (Operation.Decrypt);
                     }
                     if (args[2].Equals("-a", StringComparison.InvariantCulture))
                     {
-                        return (EncDec.Auto);
+                        return (Operation.Auto);
                     }
                 }
+                return Operation.Error;
             }
-            return EncDec.Auto;
+            return Operation.Auto;
         }
 
         static void Main(string[] args)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
+            int errno = 0;
 
-            string inputFilename = getInputFilename(args);
-            string outputFilename = getOutputFilename(args);
-            EncDec encDec = getEncrypt(args);
-
-            if (null == inputFilename
-                || (args.Length == 4 && null == outputFilename))
-            {
-                // if we have no filename, or with have 4 args and no output filename, get out.
+            Operation encDec = getOperationType(args);
+            if (encDec == Operation.Error) {
                 usage();
                 return;
             }
 
-            if (!File.Exists(inputFilename))
+            if (encDec == Operation.String)
             {
-                printError(inputFilename, "EncDecFile", "File does not exist");
-                return;
+                // We just want to encrypt / decrypt a string.
+                encryptDecryptString(args[1]);
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write("Finished processing string");
             }
-            if (isDirectory(inputFilename))
+            else
             {
-                printError(inputFilename, "Parameter error", "Path is a directory, should be a filename");
-                return;
-            }
-            if (!GotPermision())
-            {
-                printError("Permision denied", "EncDecFile", "You need to be part of the gudepssii to run this programme");
-                return;
-            }
-            if (null != outputFilename)
-            {
-                // If given, check if output file exists
-                if (File.Exists(outputFilename))
+                string inputFilename = getInputFilename(args);
+                string outputFilename = getOutputFilename(args);
+
+                if (null == inputFilename
+                    || (args.Length == 4 && null == outputFilename))
                 {
-                    printError(outputFilename, "EncDecFile", "Output file already exists, aborting");
+                    // if we have no filename, or with have 4 args and no output filename, get out.
+                    usage();
                     return;
                 }
+
+                if (!File.Exists(inputFilename))
+                {
+                    printError(inputFilename, "EncDecFile", "File does not exist");
+                    return;
+                }
+                if (isDirectory(inputFilename))
+                {
+                    printError(inputFilename, "Parameter error", "Path is a directory, should be a filename");
+                    return;
+                }
+                if (!GotPermision())
+                {
+                    printError("Permision denied", "EncDecFile", "You need to be part of the gudepssii to run this programme");
+                    return;
+                }
+                if (null != outputFilename)
+                {
+                    // If given, check if output file exists
+                    if (File.Exists(outputFilename))
+                    {
+                        printError(outputFilename, "EncDecFile", "Output file already exists, aborting");
+                        return;
+                    }
+                }
+                printInfo("Input file: ", inputFilename);
+
+                try
+                {
+                    errno = processFile(encDec, inputFilename, outputFilename);
+                    // the code that you want to measure comes here
+                }
+                catch (FileNotFoundException ex)
+                {
+                    printError(inputFilename, "Error processing file", ex.Message);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    printError(outputFilename, "Error creating output file ", ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    printError(inputFilename, "Unspecified error processing file", ex.Message);
+                }
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write("Finished processing file");
+                if (errno != 0)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write(" (with errors)");
+                }
+
+
             }
-            printInfo("Input file: ", inputFilename);
-			
-            try {
-                processFile(encDec, inputFilename, outputFilename);
-                // the code that you want to measure comes here
-				watch.Stop();
-				var elapsedMs = watch.ElapsedMilliseconds;
-				Console.ForegroundColor = ConsoleColor.Green;
-				Console.Write("Finished processing file in ");
-				Console.ForegroundColor = ConsoleColor.Yellow;
-				if (elapsedMs > 1000)
-				{
-					Console.Write(Convert.ToString(elapsedMs/1000) + " s");
-				}
-				else {
-					Console.Write(Convert.ToString(elapsedMs) + " ms");
-				}
-				Console.ForegroundColor = ConsoleColor.Green;
-				Console.WriteLine(".");
-				Console.ForegroundColor = ConsoleColor.White;
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(" in ");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            watch.Stop();
+            var elapsedMs = watch.ElapsedMilliseconds;
+            if (elapsedMs > 1000)
+            {
+                Console.Write(Convert.ToString(elapsedMs / 1000) + " s");
             }
-            catch (FileNotFoundException ex) {
-                printError(inputFilename, "Error processing file", ex.Message);
+            else
+            {
+                Console.Write(Convert.ToString(elapsedMs) + " ms");
             }
-            catch (UnauthorizedAccessException ex) {
-                printError(outputFilename, "Error creating output file ", ex.Message);
-            }
-            catch (Exception ex) {
-                printError(inputFilename, "Unspecified error processing file", ex.Message);
-            }
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(".");
+            Console.ForegroundColor = ConsoleColor.White;
+            
             return;
         }
     }
