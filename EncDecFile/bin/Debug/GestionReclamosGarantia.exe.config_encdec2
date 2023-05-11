@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <configSections>
+    <sectionGroup name="userSettings" type="System.Configuration.UserSettingsGroup, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" >
+      <section name="GestionReclamosGarantia.Properties.Settings" type="System.Configuration.ClientSettingsSection, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" allowExeDefinition="MachineToLocalUser" requirePermission="false" />
+    </sectionGroup>
+    <sectionGroup name="applicationSettings" type="System.Configuration.ApplicationSettingsGroup, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" >
+      <section name="GestionReclamosGarantia.Properties.Settings" type="System.Configuration.ClientSettingsSection, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" requirePermission="false" />
+    </sectionGroup>
+  </configSections>
+  <connectionStrings>
+    <add name="AS400" connectionString="DSN=AS400TOYOTA;UID=UTCBCKPC;PWD=UTCBCKPC" />
+    <add name="_Conexion" connectionString="Password=toyicaragentota;Persist Security Info=True;User ID=icaragent;Initial Catalog='AS400Informes';Data Source=SLPA04" />
+    <add name="GestionReclamosGarantia.Properties.Settings.AS400InformesConnectionString"
+      connectionString="Data Source=SLPA04;Initial Catalog=AS400Informes;Integrated Security=True"
+      providerName="System.Data.SqlClient" />
+  </connectionStrings>
+
+  <userSettings>
+    <GestionReclamosGarantia.Properties.Settings>
+      <setting name="Setting" serializeAs="String">
+        <value />
+      </setting>
+    </GestionReclamosGarantia.Properties.Settings>
+  </userSettings>
+	<appSettings>
+		<add key="ServerName" value="SLPA04"/>
+		<add key="DatabaseName" value="AS400Informes"/>
+		<add key="UserID" value="icaragent"/>
+		<add key="Password" value="toyicaragentota"/>
+		<add key="RutaEnviosExcel" value="\\slpa04\RDATGARANTIAS\Envios\"/>
+		
+		<add key="smtpFrom" value="explotacion@toyota-canarias.es" />
+		<add key="smtpUserName" value="uaplemail@toyota-canarias.es"/>
+		<add key="smtpPassword" value="toyuaplemailota"/>
+		<add key="smtpPort" value="587"/>
+		<add key="smtpHost" value="smtp.office365.com"/>
+	   </appSettings>
+ <applicationSettings>
+  <GestionReclamosGarantia.Properties.Settings>
+   <setting name="GestionReclamosGarantia_ServicioRA_Servicio" serializeAs="String">
+    <value>http://slpa04/SRVFacturasGarantiasRA/Servicio.asmx</value>
+   </setting>
+  </GestionReclamosGarantia.Properties.Settings>
+ </applicationSettings>
+</configuration>

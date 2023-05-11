@@ -35,7 +35,7 @@ namespace EncDecFile
                     src.ToList().ForEach(sr => result.Add(sr.SamAccountName));
                 }
             }
-
+ 
             return result.ToArray();
         }
 
@@ -197,9 +197,9 @@ namespace EncDecFile
             string candidateString = null;
 
             bool foundAdd = false;
-            int foundAddAt = 0;
+            int  foundAddAt = 0;
             bool foundCandidateString = false;
-            int foundCandidateStringAt = 0;
+            int  foundCandidateStringAt = 0;
  
 
             int foundStringAt = 0;

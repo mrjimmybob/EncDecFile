@@ -1,0 +1,7 @@
+C:\Users\mark\source\repos\EncDecFile\EncDecFile\bin\Debug\EncDecFile.exe
+C:\Users\mark\source\repos\EncDecFile\EncDecFile\bin\Debug\EncDecFile.pdb
+C:\Users\mark\source\repos\EncDecFile\EncDecFile\bin\Debug\EncryptorLibrary.dll
+C:\Users\mark\source\repos\EncDecFile\EncDecFile\obj\Debug\EncDecFile.csproj.CoreCompileInputs.cache
+C:\Users\mark\source\repos\EncDecFile\EncDecFile\obj\Debug\EncDecFile.csproj.CopyComplete
+C:\Users\mark\source\repos\EncDecFile\EncDecFile\obj\Debug\EncDecFile.exe
+C:\Users\mark\source\repos\EncDecFile\EncDecFile\obj\Debug\EncDecFile.pdb

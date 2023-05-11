@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <configSections>
+    <sectionGroup name="userSettings" type="System.Configuration.UserSettingsGroup, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" >
+      <section name="GestionReclamosGarantia.Properties.Settings" type="System.Configuration.ClientSettingsSection, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" allowExeDefinition="MachineToLocalUser" requirePermission="false" />
+    </sectionGroup>
+    <sectionGroup name="applicationSettings" type="System.Configuration.ApplicationSettingsGroup, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" >
+      <section name="GestionReclamosGarantia.Properties.Settings" type="System.Configuration.ClientSettingsSection, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" requirePermission="false" />
+    </sectionGroup>
+  </configSections>
+  <connectionStrings>
+    <add name="AS400" connectionString="2V4jbg6lDF+I9xzyUJEWEDPNkqocUX6Ny+RPkvHW9q87dlxts6NVFRwYlumpzhGpDITLALm2ygElXenE28OIjOg9h5JOIvbX" />
+    <add name="_Conexion" connectionString="Lw0amYMEhJSjmUJCpw2DbjAqGr4lfn+R5Jt9N17vNSl/z+OgmWdWuumfw4j0JJbGWQ18eUmVnLGAeyHQIW5RMTM/eFJpikyMQcZy0onpksNpY5g4SFYTerNMsCQmICmuCig6jFz7tizS1tl9IdRMB8n3OakRwPVN6D2Hkk4i9tc=" />
+    <add name="GestionReclamosGarantia.Properties.Settings.AS400InformesConnectionString"
+      connectionString="Og1uXLVHnG0C4MzhEOz2OTf69BEl5zNptAm/9WATgMhE0nLdQYwCIzOag6dJeEqkb1I26PUFfGw9IdYALDaHw/rYv33ik40tpvbDQZChy8o="
+      providerName="System.Data.SqlClient" />
+  </connectionStrings>
+
+  <userSettings>
+    <GestionReclamosGarantia.Properties.Settings>
+      <setting name="Setting" serializeAs="String">
+        <value />
+      </setting>
+    </GestionReclamosGarantia.Properties.Settings>
+  </userSettings>
+	<appSettings>
+		<add key="ServerName" value="sf+4Tl92CbU="/>
+		<add key="DatabaseName" value="FZiuU5vG1oSH5ELGsU8cMA=="/>
+		<add key="UserID" value="76z2BdzLaFnDBi/lZ+jDpr1XpomkaKyj6D2Hkk4i9tc="/>
+		<add key="Password" value="AQTOWgW1DS6ag5cRBOKLBA/GmT4k/cPD6D2Hkk4i9tc="/>
+		<add key="RutaEnviosExcel" value="2UYfururx0paRz5rwlEPiuK1Tsn9lCU/fhfstGyY5bk="/>
+		
+		<add key="smtpFrom" value="06Tdk801vuV+2+CS1hJgbaHxaz43ifJN2C20S+ynnFA=" />
+		<add key="smtpUserName" value="/fHlDfMaW4uXuFHrSG1r5xpIasTtQ2YT446IdnsDr/oZ2vSZvVW0k/MmDmhrv20/"/>
+		<add key="smtpPassword" value="/EtQuQEfF5o3qQ7g0vYv697RflKJbCQh6D2Hkk4i9tc="/>
+		<add key="smtpPort" value="EI3q+jvla0I="/>
+		<add key="smtpHost" value="BwBZUjcC9V25mdx2l2oOwYuDgCMd+R4H"/>
+	   </appSettings>
+ <applicationSettings>
+  <GestionReclamosGarantia.Properties.Settings>
+   <setting name="GestionReclamosGarantia_ServicioRA_Servicio" serializeAs="String">
+    <value>http://slpa04/SRVFacturasGarantiasRA/Servicio.asmx</value>
+   </setting>
+  </GestionReclamosGarantia.Properties.Settings>
+ </applicationSettings>
+</configuration>
