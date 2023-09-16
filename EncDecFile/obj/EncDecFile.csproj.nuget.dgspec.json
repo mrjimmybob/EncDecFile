@@ -1,28 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\mark\\source\\repos\\EncDecFile\\EncDecFile\\EncDecFile.csproj": {}
+    "C:\\Users\\mr_ji\\source\\repos\\EncDecFile\\EncDecFile\\EncDecFile.csproj": {}
   },
   "projects": {
-    "C:\\Users\\mark\\source\\repos\\EncDecFile\\EncDecFile\\EncDecFile.csproj": {
+    "C:\\Users\\mr_ji\\source\\repos\\EncDecFile\\EncDecFile\\EncDecFile.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mark\\source\\repos\\EncDecFile\\EncDecFile\\EncDecFile.csproj",
+        "projectUniqueName": "C:\\Users\\mr_ji\\source\\repos\\EncDecFile\\EncDecFile\\EncDecFile.csproj",
         "projectName": "EncDecFile",
-        "projectPath": "C:\\Users\\mark\\source\\repos\\EncDecFile\\EncDecFile\\EncDecFile.csproj",
-        "packagesPath": "C:\\Users\\mark\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\mark\\source\\repos\\EncDecFile\\EncDecFile\\obj\\",
+        "projectPath": "C:\\Users\\mr_ji\\source\\repos\\EncDecFile\\EncDecFile\\EncDecFile.csproj",
+        "packagesPath": "C:\\Users\\mr_ji\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\mr_ji\\source\\repos\\EncDecFile\\EncDecFile\\obj\\",
         "projectStyle": "PackageReference",
         "skipContentFileWrite": true,
         "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\mark\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\mr_ji\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net35"
@@ -49,6 +47,9 @@
       },
       "runtimes": {
         "win": {
+          "#import": []
+        },
+        "win-arm64": {
           "#import": []
         },
         "win-x64": {

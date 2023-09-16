@@ -5,3 +5,11 @@ C:\Users\mark\source\repos\EncDecFile\EncDecFile\obj\Release\EncDecFile.csproj.C
 C:\Users\mark\source\repos\EncDecFile\EncDecFile\obj\Release\EncDecFile.csproj.CopyComplete
 C:\Users\mark\source\repos\EncDecFile\EncDecFile\obj\Release\EncDecFile.exe
 C:\Users\mark\source\repos\EncDecFile\EncDecFile\obj\Release\EncDecFile.pdb
+C:\Users\mr_ji\source\repos\EncDecFile\EncDecFile\bin\Release\EncDecFile.exe
+C:\Users\mr_ji\source\repos\EncDecFile\EncDecFile\bin\Release\EncDecFile.pdb
+C:\Users\mr_ji\source\repos\EncDecFile\EncDecFile\bin\Release\EncryptorLibrary.dll
+C:\Users\mr_ji\source\repos\EncDecFile\EncDecFile\obj\Release\EncDecFile.csproj.AssemblyReference.cache
+C:\Users\mr_ji\source\repos\EncDecFile\EncDecFile\obj\Release\EncDecFile.csproj.CoreCompileInputs.cache
+C:\Users\mr_ji\source\repos\EncDecFile\EncDecFile\obj\Release\EncDecFile.csproj.CopyComplete
+C:\Users\mr_ji\source\repos\EncDecFile\EncDecFile\obj\Release\EncDecFile.exe
+C:\Users\mr_ji\source\repos\EncDecFile\EncDecFile\obj\Release\EncDecFile.pdb

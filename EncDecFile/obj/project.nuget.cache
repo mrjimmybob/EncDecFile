@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "Ps99pin+9LwBiwqsHOhVh50ZTzLEIqQ0v4Ox9LcL3T4ShWEk1jE+3ZHhIwtFNPi2PKXhHDZbbUgDvL3MC2bCWA==",
+  "dgSpecHash": "aFnhOgP4J4+dz6YZAFOi2ifzLecB+KGkzUaz4IV9xdlWN0WIx3lHO5V+6kiU+HZ/HNRdJFQejWRNPI6I498oEQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\mark\\source\\repos\\EncDecFile\\EncDecFile\\EncDecFile.csproj",
+  "projectFilePath": "C:\\Users\\mr_ji\\source\\repos\\EncDecFile\\EncDecFile\\EncDecFile.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\mark\\.nuget\\packages\\ilmerge\\3.0.41\\ilmerge.3.0.41.nupkg.sha512"
+    "C:\\Users\\mr_ji\\.nuget\\packages\\ilmerge\\3.0.41\\ilmerge.3.0.41.nupkg.sha512"
   ],
   "logs": []
 }
