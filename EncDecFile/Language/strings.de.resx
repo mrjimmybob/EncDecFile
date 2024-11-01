@@ -117,10 +117,139 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Hello" xml:space="preserve">
-    <value>Hallo</value>
+  <data name="action" xml:space="preserve">
+    <value>Aktion</value>
   </data>
-  <data name="World" xml:space="preserve">
-    <value>Welt</value>
+  <data name="automatic_detection" xml:space="preserve">
+    <value>Automatische Erkennung (nicht zuverlässig)</value>
+  </data>
+  <data name="a_opt_desc" xml:space="preserve">
+    <value>Dateinamen automatisch verschlüsseln oder entschlüsseln</value>
+  </data>
+  <data name="a_opt_desc2" xml:space="preserve">
+    <value>Wenn der Dateiname verschlüsselt ist, wird er entschlüsselt, und wenn es sich um Klartext handelt, wird er verschlüsselt</value>
+  </data>
+  <data name="created_output_file" xml:space="preserve">
+    <value>Erstellte Ausgabedatei</value>
+  </data>
+  <data name="decrypted" xml:space="preserve">
+    <value>Entschlüsselt</value>
+  </data>
+  <data name="decrypted_string" xml:space="preserve">
+    <value>Entschlüsselte Zeichenfolge</value>
+  </data>
+  <data name="decrypting" xml:space="preserve">
+    <value>Entschlüsselung</value>
+  </data>
+  <data name="d_opt_desc" xml:space="preserve">
+    <value>Entschlüsselt Konfigurationsdatei Dateiname</value>
+  </data>
+  <data name="encrypted" xml:space="preserve">
+    <value>Verschlüsselt</value>
+  </data>
+  <data name="encrypted_string" xml:space="preserve">
+    <value>Verschlüsselte Zeichenfolge</value>
+  </data>
+  <data name="encrypting" xml:space="preserve">
+    <value>Verschlüsseln</value>
+  </data>
+  <data name="error_creating_output_file" xml:space="preserve">
+    <value>Fehler beim Erstellen der Ausgabedatei</value>
+  </data>
+  <data name="error_processing_file" xml:space="preserve">
+    <value>Fehler bei der Verarbeitung der Datei</value>
+  </data>
+  <data name="e_opt_desc" xml:space="preserve">
+    <value>Verschlüsselt den Dateinamen der Konfigurationsdatei</value>
+  </data>
+  <data name="filename" xml:space="preserve">
+    <value>Dateiname</value>
+  </data>
+  <data name="file_does_not_exist" xml:space="preserve">
+    <value>Datei existiert nicht</value>
+  </data>
+  <data name="finished_processing_file" xml:space="preserve">
+    <value>Fertige Verarbeitungsdatei</value>
+  </data>
+  <data name="finished_processing_string" xml:space="preserve">
+    <value>Fertige Verarbeitungszeichenfolge</value>
+  </data>
+  <data name="from_a_total_of" xml:space="preserve">
+    <value>Von insgesamt</value>
+  </data>
+  <data name="in" xml:space="preserve">
+    <value>in</value>
+  </data>
+  <data name="input_file" xml:space="preserve">
+    <value>Eingabedatei</value>
+  </data>
+  <data name="need_to_be_group_gudepssii" xml:space="preserve">
+    <value>Sie müssen Teil der gudepssii sein, um dieses Programm auszuführen</value>
+  </data>
+  <data name="options" xml:space="preserve">
+    <value>Optionen</value>
+  </data>
+  <data name="outputfile" xml:space="preserve">
+    <value>Ausgabedatei</value>
+  </data>
+  <data name="output_file" xml:space="preserve">
+    <value>Ausgabedatei:</value>
+  </data>
+  <data name="output_file_already_exists" xml:space="preserve">
+    <value>Die Ausgabedatei ist bereits vorhanden. Der Vorgang wird abgebrochen.</value>
+  </data>
+  <data name="o_opt_desc" xml:space="preserve">
+    <value>Ausgabe in Ausgabedatei schreiben</value>
+  </data>
+  <data name="o_opt_desc2" xml:space="preserve">
+    <value>Wenn mit -o keine Ausgabedatei angegeben wird, wird die Ausgabedatei automatisch benannt</value>
+  </data>
+  <data name="parameter_error" xml:space="preserve">
+    <value>Parameterfehler</value>
+  </data>
+  <data name="path_is_a_directory_should_be_a_filename" xml:space="preserve">
+    <value>Pfad ist ein Verzeichnis, sollte ein Dateiname sein</value>
+  </data>
+  <data name="permision_denied" xml:space="preserve">
+    <value>Zugriff verweigert</value>
+  </data>
+  <data name="processing" xml:space="preserve">
+    <value>Verarbeitung</value>
+  </data>
+  <data name="progdesc" xml:space="preserve">
+    <value>Programm zum Verschlüsseln oder Entschlüsseln einer dotnet .config-Konfigurationsdatei.</value>
+  </data>
+  <data name="string" xml:space="preserve">
+    <value>Schnur</value>
+  </data>
+  <data name="s_opt_desc" xml:space="preserve">
+    <value>Zeichenfolge verschlüsseln und entschlüsseln, Ausgabe auf Standardausgabe drucken</value>
+  </data>
+  <data name="tried_decrypt" xml:space="preserve">
+    <value>Versucht, nicht verschlüsselte zu entschlüsseln</value>
+  </data>
+  <data name="unspecified_error_processing_file" xml:space="preserve">
+    <value>Nicht angegebener Fehler bei der Dateiverarbeitung</value>
+  </data>
+  <data name="usage" xml:space="preserve">
+    <value>Verwendung</value>
+  </data>
+  <data name="with_errors" xml:space="preserve">
+    <value>mit Fehlern</value>
+  </data>
+  <data name="error" xml:space="preserve">
+    <value>Fehler</value>
+  </data>
+  <data name="see_usage" xml:space="preserve">
+    <value>Siehe Hilfe </value>
+  </data>
+  <data name="missing_option" xml:space="preserve">
+    <value>Fehlender Wert für die Option</value>
+  </data>
+  <data name="found" xml:space="preserve">
+    <value>Gefunden</value>
+  </data>
+  <data name="encrypt_decrypt" xml:space="preserve">
+    <value>( [E]ncrypt | [D]ecrypt | [O]ther )</value>
   </data>
 </root>

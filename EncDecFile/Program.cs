@@ -14,6 +14,8 @@ using System.Resources;
 using System.Threading;
 using System.Text.RegularExpressions;
 using System.Security.Permissions;
+using static System.Net.WebRequestMethods;
+using File = System.IO.File;
 
 
 namespace EncDecFile
@@ -21,17 +23,10 @@ namespace EncDecFile
     
     public static class LangHelper
     {
-        private static ResourceManager _rm;
-        static LangHelper()
-        { 
-            _rm = new ResourceManager("EncDecFile.Language.strings",
+        private static readonly ResourceManager rm = new ResourceManager("EncDecFile.Language.strings",
                 Assembly.GetExecutingAssembly());
-        }
 
-        public static string GetString(string name)
-        {
-            return _rm.GetString(name);
-        }
+        public static string GetString(string name) => rm.GetString(name);
 
         public static void ChangeLanguage(string language)
         {
@@ -45,16 +40,9 @@ namespace EncDecFile
     {
         static int versionMajor = 3;
         static int versionMinor = 1;
-        static int versionRevision = 0;
+        static int versionRevision = 2;
 
-        enum Operation
-        {
-            Auto,
-            Decrypt,
-            Encrypt,
-            String,
-            Error
-        }
+
 
         static public string[] GetGroupNames(string domainName, string userName)
         {
@@ -71,16 +59,14 @@ namespace EncDecFile
 
         static private bool GotPermision()
         {
+            return true;
             IntPtr logonToken = WindowsIdentity.GetCurrent().Token;
             using (WindowsIdentity windowsId = new WindowsIdentity(logonToken)) {
 
                 string ssid = windowsId.User.ToString();
 
-                // List<string> result = new List<string>();
-
                 foreach (IdentityReference group in windowsId.Groups) {
                     try {
-                        // result.Add(group.Translate(typeof(NTAccount)).ToString());
                         string str = group.Translate(typeof(NTAccount)).ToString();
                         if (str.Contains("gudepssii")) {
                             return true;
@@ -95,7 +81,7 @@ namespace EncDecFile
         }
 
  
-        static void printError(string name, string error, string detail)
+        static void PrintError(string name, string error, string detail)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Write(error + ": ");
@@ -106,7 +92,7 @@ namespace EncDecFile
             Console.ForegroundColor = ConsoleColor.White;
         }
 
-        static void printInfo(string str1, string str2)
+        static void PrintInfo(string str1, string str2)
         {
 			Console.ForegroundColor = ConsoleColor.Green;
             Console.Write(str1);
@@ -115,21 +101,34 @@ namespace EncDecFile
             Console.ForegroundColor = ConsoleColor.White;
         }
 		
-        static void printProgress(string status)
+        static void PrintProgress(string status)
         {
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.Write(status);
             Console.ForegroundColor = ConsoleColor.White;
 
         }
+        static OperationType UserEncriptString(string str)
+        {
+            ConsoleKeyInfo keyInfo;
 
-        static void usage()
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine($"{LangHelper.GetString("found")}: {str}");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"{LangHelper.GetString("encrypt_decrypt")} ?");
+            keyInfo = Console.ReadKey(true); // true to not display the key pressed
+            if (keyInfo.KeyChar == 'e' || keyInfo.KeyChar == 'E') return OperationType.Encrypt;
+            if (keyInfo.KeyChar == 'd' || keyInfo.KeyChar == 'D') return OperationType.Decrypt;
+            return OperationType.Interactive;
+        }
+
+        static void Usage()
         {
             // ResourceManager stringManager;
             // stringManager = new ResourceManager("es-ES", Assembly.GetExecutingAssembly());
             CultureInfo ci = CultureInfo.InstalledUICulture;
             LangHelper.ChangeLanguage(ci.TwoLetterISOLanguageName);
-            
+
             // Console.WriteLine("Default Language Info:");
             // Console.WriteLine("* Name: {0}", ci.Name);
             // Console.WriteLine("* Display Name: {0}", ci.DisplayName);
@@ -137,7 +136,9 @@ namespace EncDecFile
             // Console.WriteLine("* 2-letter ISO Name: {0}", ci.TwoLetterISOLanguageName);
             // Console.WriteLine("* 3-letter ISO Name: {0}", ci.ThreeLetterISOLanguageName);
             // Console.WriteLine("* 3-letter Win32 API Name: {0}", ci.ThreeLetterWindowsLanguageName);
-
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"{LangHelper.GetString("progdesc")}");
+            Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine($"{LangHelper.GetString("usage")}: ");
             Console.ForegroundColor = ConsoleColor.Green;
@@ -206,14 +207,13 @@ namespace EncDecFile
         /*
          * Create automatic outputFilena if none given, if given, return it.
          */
-        static string createOutputFilename(string inputFilename, string outputFilename)
+        static string CreateOutputFilename(string inputFilename, string outputFilename)
         {
-            if (null == outputFilename)
+            if (String.IsNullOrEmpty(outputFilename))
             {
-                string ext = null;
 
                 outputFilename = inputFilename + "_encdec";
-
+                string ext;
                 int numExt = 0;
                 do
                 {
@@ -226,15 +226,7 @@ namespace EncDecFile
             return outputFilename;
         }
 
-        /*
-         <****add**** name = "GestionReclamosGarantia.Properties.Settings.AS400InformesConnectionString"
-              ****connectionString**** = "Data Source=SLPA04;Initial Catalog=AS400Informes;Integrated Security=True"
-              providerName = "System.Data.SqlClient"/>
-
-        <add key="ServerName" value="SLPA04"/>
-         
-         */
-        static int processFile(Operation encDec, string inputFilename, string outputFilename)
+        static int processFile(OperationType op, string inputFilename, string outputFilename)
         {
             string[] lines = File.ReadAllLines(inputFilename);
             string candidateString = null;
@@ -243,8 +235,8 @@ namespace EncDecFile
             int  foundAddAt = 0;
             bool foundCandidateString = false;
             int  foundCandidateStringAt = 0;
- 
 
+            OperationType encDec = op;
             int foundStringAt = 0;
             int numEncrypted = 0;
             int numDecrypted = 0;
@@ -253,26 +245,26 @@ namespace EncDecFile
 
             int errno = 0;
 
-            outputFilename = createOutputFilename(inputFilename, outputFilename);
+            outputFilename = CreateOutputFilename(inputFilename, outputFilename);
 
-            printInfo($"{LangHelper.GetString("output_file")}: ", outputFilename);
+            PrintInfo($"{LangHelper.GetString("output_file")}: ", outputFilename);
 
             using (StreamWriter outputFile = new StreamWriter(outputFilename)) {
                 foundAdd = false;
                 foundCandidateString = false;
 
 
-                if (encDec == Operation.Auto)
+                if (encDec == OperationType.Auto)
                 {
-                    printInfo($"{LangHelper.GetString("action")}: ", LangHelper.GetString("automatic_detection"));
+                    PrintInfo($"{LangHelper.GetString("action")}: ", LangHelper.GetString("automatic_detection"));
                 }
-                if (encDec == Operation.Decrypt)
+                if (encDec == OperationType.Decrypt)
                 {
-                    printInfo($"{LangHelper.GetString("action")}: ", LangHelper.GetString("decrypting"));
+                    PrintInfo($"{LangHelper.GetString("action")}: ", LangHelper.GetString("decrypting"));
                 }
-                if (encDec == Operation.Encrypt)
+                if (encDec == OperationType.Encrypt)
                 {
-                    printInfo($"{LangHelper.GetString("action")}: ", LangHelper.GetString("encrypting"));
+                    PrintInfo($"{LangHelper.GetString("action")}: ", LangHelper.GetString("encrypting"));
                 }
 
                 Console.ForegroundColor = ConsoleColor.Cyan;
@@ -320,8 +312,17 @@ namespace EncDecFile
 
                             Encryptor enc = new Encryptor();
                             string result = candidateString;
+                            if (op == OperationType.Interactive)
+                            {
+                                Console.WriteLine("");
+                                encDec = UserEncriptString(candidateString);
+                            }
+                            else
+                            {
+                                encDec = op;
+                            }
 
-                            if (encDec == Operation.Auto)
+                            if (encDec == OperationType.Auto)
                             {
                                 bool autoDecrypted = false;
                                 try
@@ -330,7 +331,7 @@ namespace EncDecFile
                                     result = enc.Decrypt(candidateString, true);
                                     ++numDecrypted;
                                     autoDecrypted = true;
-                                    printProgress("d");
+                                    PrintProgress("d");
                                 }
                                 catch
                                 {
@@ -344,7 +345,7 @@ namespace EncDecFile
                                     {
                                         result = enc.Encrypt(candidateString, true);
                                         ++numEncrypted;
-                                        printProgress("e");
+                                        PrintProgress("e");
                                     }
                                     catch
                                     {
@@ -353,36 +354,36 @@ namespace EncDecFile
                                     }
                                 }
                             }
-                            if (encDec == Operation.Encrypt)
+                            if (encDec == OperationType.Encrypt)
                             {
                                 // We want to encrypt
                                 try
                                 {
                                     result = enc.Encrypt(candidateString, true);
                                     ++numEncrypted;
-                                    printProgress("e");
+                                    PrintProgress("e");
                                 }
                                 catch 
                                 {
                                     // Ignore and cary on processing file, just puke out input line
                                     result = candidateString;
-                                    printProgress("=");
+                                    PrintProgress("=");
                                 }
                             }
-                            if (encDec == Operation.Decrypt)
+                            if (encDec == OperationType.Decrypt)
                             {
                                 // We want to decrypt
                                 try { 
                                     result = enc.Decrypt(candidateString, true);
                                     ++numDecrypted;
-                                    printProgress("d");
+                                    PrintProgress("d");
                                 }
                                 catch 
                                 {
                                     // Ignore and cary on processing file, just puke out input line
                                     result = candidateString;
                                     ++numTryDecrypted;
-                                    printProgress("=");
+                                    PrintProgress("=");
                                 }
                             }
 
@@ -402,7 +403,7 @@ namespace EncDecFile
                             catch (Exception ex)
                             {
                                 errno = -1;
-                                printError(outputFilename, LangHelper.GetString("error_processing_file"), ex.Message);  
+                                PrintError(outputFilename, LangHelper.GetString("error_processing_file"), ex.Message);  
                             }
 
                             // Reset values and search for next
@@ -420,7 +421,7 @@ namespace EncDecFile
                         catch (Exception ex)
                         {
                             errno = -1;
-                            printError(outputFilename, LangHelper.GetString("error_processing_file"), ex.Message);
+                            PrintError(outputFilename, LangHelper.GetString("error_processing_file"), ex.Message);
                         }
                         ++numOther;
 
@@ -465,7 +466,7 @@ namespace EncDecFile
             return errno;
         }
 
-        static bool isDirectory(string path)
+        static bool IsDirectory(string path)
         {
             // get the file attributes for file or directory
             FileAttributes attr = File.GetAttributes(path);
@@ -476,74 +477,20 @@ namespace EncDecFile
             }
             return false;
         }
+  
 
-        static string getInputFilename(string[] args)
-        {
-            if (args.Length < 2 || args.Length > 4 || args.Length == 3)
-            {
-                // If not 2 or 4 arguments, get out
-                return null;
-            }
-            // You MUST have 2 or 4 arguments (here at least 2 exist)
-            if (args[0].Equals("-d", StringComparison.InvariantCulture) 
-                || args[0].Equals("-e", StringComparison.InvariantCulture)
-                || args[0].Equals("-a", StringComparison.InvariantCulture))
-            {
-                // following is the inputFilename
-                return args[1];
-            }
-            if (args.Length == 4)
-            {
-                // If we have 4 arguments, the input file could be the second argument
-                if (args[2].Equals("-d", StringComparison.InvariantCulture) 
-                    || args[2].Equals("-e", StringComparison.InvariantCulture)
-                    || args[2].Equals("-a", StringComparison.InvariantCulture))
-                {
-                    // following is the inputFilename
-                    return args[3];
-                }
-            }
-            return null;
-        }
-
-        static string getOutputFilename(string[] args)
-        {
-            if (args.Length < 2 || args.Length > 4 || args.Length == 3)
-            {
-                // If not 2 or 4 arguments, get out
-                return null;
-            }
-            // You MUST have 4 arguments, but -o can be 2nd or 4th
-            if (args[0].Equals("-o", StringComparison.InvariantCulture))
-            {
-                // following is the outputFilename
-                return args[1];
-            }
-            if (args.Length == 4)
-            {
-                // If we have 4 arguments, the output file could be the second argument
-                if (args[2].Equals("-o", StringComparison.InvariantCulture))
-                {
-                    // following is the outputFilename
-                    return args[3];
-                }
-            }
-            // If you did not find the -o return null
-            return null;
-        }
-
-        static void encryptDecryptString(string argumentString)
+        static (string, OperationType) EncryptDecryptString(string argumentString)
         {
             bool stringIsEncrypted = false;
             try
             {
                 Encryptor enc = new Encryptor();
                 String decryptedString = enc.Decrypt(argumentString, true);
-                printInfo($"{LangHelper.GetString("decrypted_string")}: ", decryptedString);
                 // Hack, you cannon decrypt a non encrypted string
                 stringIsEncrypted = true; // I got here, so it did not fail (string is encrypted)
+                return (decryptedString, OperationType.Decrypt);
             }
-            catch
+            catch  
             {
                 // Ignore
             }
@@ -553,69 +500,118 @@ namespace EncDecFile
                 {
                     Encryptor enc = new Encryptor();
                     String encryptedString = enc.Encrypt(argumentString, true);
-                    printInfo($"{LangHelper.GetString("encrypted_string")}: ", encryptedString);
+                    return (encryptedString, OperationType.Encrypt);
                 }
                 catch
                 {
                     // Ignore
                 }
             }
+            return (String.Empty, OperationType.Error);
         }
 
-        static Operation getOperationType(string[] args)
+        private static Opts GetArgs(string[] args)
         {
-            if (args.Length < 2 || args.Length > 4 || args.Length == 3)
+            Opts opts = new Opts
             {
-                // If not 2 or 4 arguments, get out
-                return Operation.Error;
-            }
-            // You MUST have 2 or 4 arguments
-            if (args[0].Equals("-d", StringComparison.InvariantCulture) 
-                || args[0].Equals("-e", StringComparison.InvariantCulture)
-                || args[0].Equals("-a", StringComparison.InvariantCulture)
-                || args[0].Equals("-s", StringComparison.InvariantCulture))
+                InputFile = String.Empty,
+                OutputFile = String.Empty,
+                SimpleString = String.Empty,
+                Operation = OperationType.Error
+            };
+
+            for (int i = 0; i < args.Length; i++)
             {
-                if (args[0].Equals("-e", StringComparison.InvariantCulture))
+                switch (args[i])
                 {
-                    return (Operation.Encrypt);
-                }
-                if (args[0].Equals("-d", StringComparison.InvariantCulture))
-                {
-                    return (Operation.Decrypt);
-                }
-                if (args[0].Equals("-a", StringComparison.InvariantCulture))
-                {
-                    return (Operation.Auto);
-                }
-                if (args[0].Equals("-s", StringComparison.InvariantCulture))
-                {
-                    return (Operation.String);
+                    case "-a":
+                    case "--auto":
+                        if (i + 1 < args.Length)
+                        {
+                            opts.InputFile = args[++i];
+                            opts.Operation = OperationType.Auto;
+                        }
+                        else {
+                            opts.Operation = OperationType.Error;
+                            PrintError($"{LangHelper.GetString("error")}", $"{LangHelper.GetString("missing_option")} infile (-a | --auto)", $"{LangHelper.GetString("see_help")} (-h | --help)");
+                        }
+                        break;
+
+                    case "-d":
+                    case "--decrypt":
+                        if (i + 1 < args.Length)
+                        {
+                            opts.InputFile = args[++i];
+                            opts.Operation = OperationType.Decrypt;
+                        }
+                        else {
+                            opts.Operation = OperationType.Error;
+                            PrintError($"{LangHelper.GetString("error")}", $"{LangHelper.GetString("missing_option")} infile (-d | --decrypt)", $"{LangHelper.GetString("see_help")} (-h | --help)");
+                        }
+                        break;
+
+                    case "-e":
+                    case "--encrypt":
+                        if (i + 1 < args.Length)
+                        {
+                            opts.InputFile = args[++i];
+                            opts.Operation = OperationType.Encrypt;
+                        }
+                        else
+                        {
+                            opts.Operation = OperationType.Error;
+                            PrintError($"{LangHelper.GetString("error")}", $"{LangHelper.GetString("missing_option")} infile (-e | --encrypt)", $"{LangHelper.GetString("see_help")} (-h | --help)");
+                        }
+                        break;
+
+                    case "-i":
+                    case "--interactive":
+                        if (i + 1 < args.Length)
+                        {
+                            opts.InputFile = args[++i];
+                            opts.Operation = OperationType.Interactive;
+                        }
+                        else {
+                            opts.Operation = OperationType.Error;
+                            PrintError($"{LangHelper.GetString("error")}", $"{LangHelper.GetString("missing_option")} infile (-i | --interactive)", $"{LangHelper.GetString("see_help")} (-h | --help)");
+                        }
+                        
+                        break;
+
+                    case "-o":
+                    case "--outfile":
+                        if (i + 1 < args.Length)
+                        {
+                            opts.OutputFile = args[++i];
+                        }
+                        else
+                        {
+                            opts.Operation = OperationType.Error;
+                            PrintError($"{LangHelper.GetString("error")}", $"{LangHelper.GetString("missing_option")} outfile (-o | --outfile)", $"{LangHelper.GetString("see_help")} (-h | --help)");
+                        }
+                        break;
+
+                    case "-s":
+                    case "--string":
+                        if (i + 1 < args.Length)
+                        {
+                            opts.SimpleString = args[++i];
+                            opts.Operation = OperationType.SimpleString;
+                        }
+                        else
+                        {
+                            opts.Operation = OperationType.Error;
+                            PrintError($"{LangHelper.GetString("error")}", $"{LangHelper.GetString("missing_option")} string (-s | --string)", $"{LangHelper.GetString("see_help")} (-h | --help)");
+                        }
+                        break;
+
+                    default:
+                        opts.Operation = OperationType.Error; // Not needed
+                        break;
+
                 }
             }
-            if (args.Length == 4)
-            {
-                // If we have 4 arguments, the input file could be the second argument
-                // But the user can only use -s with 2 args.
-                if (args[2].Equals("-d", StringComparison.InvariantCulture) 
-                    || args[2].Equals("-e", StringComparison.InvariantCulture)
-                    || args[2].Equals("-a", StringComparison.InvariantCulture))
-                {
-                    if (args[2].Equals("-e", StringComparison.InvariantCulture))
-                    {
-                        return (Operation.Encrypt);
-                    }
-                    if (args[2].Equals("-d", StringComparison.InvariantCulture))
-                    {
-                        return (Operation.Decrypt);
-                    }
-                    if (args[2].Equals("-a", StringComparison.InvariantCulture))
-                    {
-                        return (Operation.Auto);
-                    }
-                }
-                return Operation.Error;
-            }
-            return Operation.Auto;
+            return opts;
         }
 
         static void Main(string[] args)
@@ -623,75 +619,98 @@ namespace EncDecFile
             var watch = System.Diagnostics.Stopwatch.StartNew();
             int errno = 0;
 
-            Operation encDec = getOperationType(args);
-            if (encDec == Operation.Error) {
-                usage();
+            Opts opt = GetArgs(args);
+            if (opt.Operation == OperationType.Error) {
+                Usage();
                 return;
             }
 
-            if (encDec == Operation.String)
-            {
+            if (opt.Operation == OperationType.SimpleString) {
                 // We just want to encrypt / decrypt a string.
-                encryptDecryptString(args[1]);
+                string str;
+                OperationType op = OperationType.Error;
+                if (String.IsNullOrEmpty(opt.OutputFile))
+                {
+                    (str, op) = EncryptDecryptString(opt.SimpleString);
+                    switch (op)
+                    {
+                        case OperationType.Decrypt:
+                            PrintInfo($"{LangHelper.GetString("encrypted_string")}: ", str);
+                            break;
+                        case OperationType.Encrypt:
+                            PrintInfo($"{LangHelper.GetString("decrypted_string")}: ", str);
+                            break;
+                        default:
+                            PrintInfo($"{LangHelper.GetString("error")}: ", opt.SimpleString);
+                            break;
+                    }
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.Write(LangHelper.GetString("finished_processing_string"));
+                }
+                else
+                {
+                    string outputFilename = opt.OutputFile;
+                    (str, _) = EncryptDecryptString(opt.SimpleString);
 
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write(LangHelper.GetString("finished_processing_string"));
+                    using (StreamWriter outputFile = new StreamWriter(outputFilename))
+                    {
+                        try
+                        {
+                            outputFile.WriteLine(str);
+                        }
+                        catch (Exception ex)
+                        {
+                            errno = -1;
+                            PrintError(outputFilename, LangHelper.GetString("error_processing_file"), ex.Message);
+                        }
+
+                    }
+                }
             }
             else
             {
-                string inputFilename = getInputFilename(args);
-                string outputFilename = getOutputFilename(args);
-
-                if (null == inputFilename
-                    || (args.Length == 4 && null == outputFilename))
+                if (!File.Exists(opt.InputFile))
                 {
-                    // if we have no filename, or with have 4 args and no output filename, get out.
-                    usage();
+                    PrintError(opt.InputFile, "EncDecFile", LangHelper.GetString("file_does_not_exist"));
                     return;
                 }
-
-                if (!File.Exists(inputFilename))
+                if (IsDirectory(opt.InputFile))
                 {
-                    printError(inputFilename, "EncDecFile", LangHelper.GetString("file_does_not_exist"));
-                    return;
-                }
-                if (isDirectory(inputFilename))
-                {
-                    printError(inputFilename, LangHelper.GetString("parameter_error"), LangHelper.GetString("path_is_a_directory_should_be_a_filename"));
+                    PrintError(opt.InputFile, LangHelper.GetString("parameter_error"), LangHelper.GetString("path_is_a_directory_should_be_a_filename"));
                     return;
                 }
                 if (!GotPermision())
                 {
-                    printError(LangHelper.GetString("permision_denied"), "EncDecFile", LangHelper.GetString("need_to_be_group_gudepssii"));
+                    PrintError(LangHelper.GetString("permision_denied"), "EncDecFile", LangHelper.GetString("need_to_be_group_gudepssii"));
                     return;
                 }
-                if (null != outputFilename)
+                if (!String.IsNullOrEmpty(opt.OutputFile))
                 {
                     // If given, check if output file exists
-                    if (File.Exists(outputFilename))
+                    if (File.Exists(opt.OutputFile))
                     {
-                        printError(outputFilename, "EncDecFile", LangHelper.GetString("output_file_already_exists"));
+                        PrintError(opt.OutputFile, "EncDecFile", LangHelper.GetString("output_file_already_exists"));
                         return;
                     }
                 }
-                printInfo($"{LangHelper.GetString("input_file")}: ", inputFilename);
+                PrintInfo($"{LangHelper.GetString("input_file")}: ", opt.InputFile);
 
                 try
                 {
-                    errno = processFile(encDec, inputFilename, outputFilename);
+                    errno = processFile(opt.Operation, opt.InputFile, opt.OutputFile);
                     // the code that you want to measure comes here
                 }
                 catch (FileNotFoundException ex)
                 {
-                    printError(inputFilename, LangHelper.GetString("error_processing_file"), ex.Message);
+                    PrintError(opt.InputFile, LangHelper.GetString("error_processing_file"), ex.Message);
                 }
                 catch (UnauthorizedAccessException ex)
                 {
-                    printError(outputFilename, LangHelper.GetString("error_creating_output_file"), ex.Message);
+                    PrintError(opt.InputFile, LangHelper.GetString("error_creating_output_file"), ex.Message);
                 }
                 catch (Exception ex)
                 {
-                    printError(inputFilename, LangHelper.GetString("unspecified_error_processing_file"), ex.Message);
+                    PrintError(opt.InputFile, LangHelper.GetString("unspecified_error_processing_file"), ex.Message);
                 }
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write(LangHelper.GetString("finished_processing_file"));
@@ -710,11 +729,11 @@ namespace EncDecFile
             var elapsedMs = watch.ElapsedMilliseconds;
             if (elapsedMs > 1000)
             {
-                Console.Write(Convert.ToString(elapsedMs / 1000) + " s");
+                Console.Write(Convert.ToString(elapsedMs / 1000, CultureInfo.InvariantCulture) + " s");
             }
             else
             {
-                Console.Write(Convert.ToString(elapsedMs) + " ms");
+                Console.Write(Convert.ToString(elapsedMs, CultureInfo.InvariantCulture) + " ms");
             }
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(".");

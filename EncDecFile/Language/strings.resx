@@ -190,7 +190,7 @@
     <value>Options</value>
   </data>
   <data name="outputfile" xml:space="preserve">
-    <value>outputfile    </value>
+    <value>outputfile </value>
   </data>
   <data name="output_file" xml:space="preserve">
     <value>Output File:</value>
@@ -211,10 +211,13 @@
     <value>Path is a directory, should be a filename</value>
   </data>
   <data name="permision_denied" xml:space="preserve">
-    <value>Permision denied</value>
+    <value>Permission denied</value>
   </data>
   <data name="processing" xml:space="preserve">
     <value>Processing</value>
+  </data>
+  <data name="progdesc" xml:space="preserve">
+    <value>Program to encrypt or decrypt a dotnet .config configuration file.</value>
   </data>
   <data name="string" xml:space="preserve">
     <value>string</value>
@@ -233,5 +236,20 @@
   </data>
   <data name="with_errors" xml:space="preserve">
     <value>with errors</value>
+  </data>
+  <data name="error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="see_usage" xml:space="preserve">
+    <value>See Help </value>
+  </data>
+  <data name="missing_option" xml:space="preserve">
+    <value>Missing value for the option</value>
+  </data>
+  <data name="found" xml:space="preserve">
+    <value>Found</value>
+  </data>
+  <data name="encrypt_decrypt" xml:space="preserve">
+    <value>( [E]ncrypt | [D]ecrypt | [O]ther )</value>
   </data>
 </root>

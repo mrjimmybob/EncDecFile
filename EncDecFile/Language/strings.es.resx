@@ -136,7 +136,7 @@
     <value>Desencriptado</value>
   </data>
   <data name="decrypted_string" xml:space="preserve">
-    <value>Cadena desencruptada</value>
+    <value>Cadena desencriptada</value>
   </data>
   <data name="decrypting" xml:space="preserve">
     <value>Desencriptando</value>
@@ -216,6 +216,9 @@
   <data name="processing" xml:space="preserve">
     <value>Procesando</value>
   </data>
+  <data name="progdesc" xml:space="preserve">
+    <value>Programa para encriptar o desencriptar archivos de configuración .config de programas .Net.</value>
+  </data>
   <data name="string" xml:space="preserve">
     <value>cadena</value>
   </data>
@@ -233,5 +236,20 @@
   </data>
   <data name="with_errors" xml:space="preserve">
     <value>con errores</value>
+  </data>
+  <data name="error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="see_usage" xml:space="preserve">
+    <value>Vea la ayuda</value>
+  </data>
+  <data name="missing_option" xml:space="preserve">
+    <value>Falta el valor de la opción</value>
+  </data>
+  <data name="found" xml:space="preserve">
+    <value>Encontrado</value>
+  </data>
+  <data name="encrypt_decrypt" xml:space="preserve">
+    <value>( [E]ncriptar | [D]ecriptar | [O]tro )</value>
   </data>
 </root>

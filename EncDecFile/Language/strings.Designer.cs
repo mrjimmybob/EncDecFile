@@ -169,6 +169,15 @@ namespace EncDecFile.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ( [E]ncrypt | [D]ecrypt | [O]ther ).
+        /// </summary>
+        internal static string encrypt_decrypt {
+            get {
+                return ResourceManager.GetString("encrypt_decrypt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Encrypted.
         /// </summary>
         internal static string encrypted {
@@ -192,6 +201,15 @@ namespace EncDecFile.Language {
         internal static string encrypting {
             get {
                 return ResourceManager.GetString("encrypting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        internal static string error {
+            get {
+                return ResourceManager.GetString("error", resourceCulture);
             }
         }
         
@@ -250,6 +268,15 @@ namespace EncDecFile.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Found.
+        /// </summary>
+        internal static string found {
+            get {
+                return ResourceManager.GetString("found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to From a total of.
         /// </summary>
         internal static string from_a_total_of {
@@ -264,6 +291,15 @@ namespace EncDecFile.Language {
         internal static string input_file {
             get {
                 return ResourceManager.GetString("input_file", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Missing value for the option.
+        /// </summary>
+        internal static string missing_option {
+            get {
+                return ResourceManager.GetString("missing_option", resourceCulture);
             }
         }
         
@@ -322,7 +358,7 @@ namespace EncDecFile.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to outputfile    .
+        ///   Looks up a localized string similar to outputfile .
         /// </summary>
         internal static string outputfile {
             get {
@@ -349,7 +385,7 @@ namespace EncDecFile.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Permision denied.
+        ///   Looks up a localized string similar to Permission denied.
         /// </summary>
         internal static string permision_denied {
             get {
@@ -367,11 +403,29 @@ namespace EncDecFile.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Program to encrypt or decrypt a dotnet .config configuration file..
+        /// </summary>
+        internal static string progdesc {
+            get {
+                return ResourceManager.GetString("progdesc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Encrypt and Decrypt string, print output to standard output.
         /// </summary>
         internal static string s_opt_desc {
             get {
                 return ResourceManager.GetString("s_opt_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to See Help .
+        /// </summary>
+        internal static string see_usage {
+            get {
+                return ResourceManager.GetString("see_usage", resourceCulture);
             }
         }
         
