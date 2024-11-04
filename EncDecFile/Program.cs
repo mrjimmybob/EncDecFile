@@ -11,16 +11,16 @@ using System.Globalization;
 using System.Reflection;
 using System.Resources;
 
-using System.Threading;
-using System.Text.RegularExpressions;
-using System.Security.Permissions;
-using static System.Net.WebRequestMethods;
-using File = System.IO.File;
+// using System.Threading;
+// using System.Text.RegularExpressions;
+// using System.Security.Permissions;
+// using static System.Net.WebRequestMethods;
+// using File = System.IO.File;
 
 
 namespace EncDecFile
 {
-    
+
     public static class LangHelper
     {
         private static readonly ResourceManager rm = new ResourceManager("EncDecFile.Language.strings",
@@ -35,7 +35,7 @@ namespace EncDecFile
             CultureInfo.CurrentUICulture = cultureInfo;
         }
     }
- 
+
     class Program
     {
         static int versionMajor = 3;
@@ -48,12 +48,14 @@ namespace EncDecFile
         {
             List<string> result = new List<string>();
 
-            using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, domainName)) {
-                using (PrincipalSearchResult<Principal> src = UserPrincipal.FindByIdentity(principalContext, userName).GetGroups()) {
+            using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, domainName))
+            {
+                using (PrincipalSearchResult<Principal> src = UserPrincipal.FindByIdentity(principalContext, userName).GetGroups())
+                {
                     src.ToList().ForEach(sr => result.Add(sr.SamAccountName));
                 }
             }
- 
+
             return result.ToArray();
         }
 
@@ -61,18 +63,23 @@ namespace EncDecFile
         {
             return true;
             IntPtr logonToken = WindowsIdentity.GetCurrent().Token;
-            using (WindowsIdentity windowsId = new WindowsIdentity(logonToken)) {
+            using (WindowsIdentity windowsId = new WindowsIdentity(logonToken))
+            {
 
                 string ssid = windowsId.User.ToString();
 
-                foreach (IdentityReference group in windowsId.Groups) {
-                    try {
+                foreach (IdentityReference group in windowsId.Groups)
+                {
+                    try
+                    {
                         string str = group.Translate(typeof(NTAccount)).ToString();
-                        if (str.Contains("gudepssii")) {
+                        if (str.Contains("gudepssii"))
+                        {
                             return true;
                         }
                     }
-                    catch {
+                    catch
+                    {
                         return false;
                     }
                 }
@@ -80,7 +87,7 @@ namespace EncDecFile
             }
         }
 
- 
+
         static void PrintError(string name, string error, string detail)
         {
             Console.ForegroundColor = ConsoleColor.Red;
@@ -94,13 +101,13 @@ namespace EncDecFile
 
         static void PrintInfo(string str1, string str2)
         {
-			Console.ForegroundColor = ConsoleColor.Green;
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.Write(str1);
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine(str2);
             Console.ForegroundColor = ConsoleColor.White;
         }
-		
+
         static void PrintProgress(string status)
         {
             Console.ForegroundColor = ConsoleColor.Magenta;
@@ -122,8 +129,28 @@ namespace EncDecFile
             return OperationType.Interactive;
         }
 
+        static void PrintOption(string strOption, string strOptionValue, string strOptional = null, string strOptionalValue = null)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("    EncDecFile ");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write(strOption + " ");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.Write(LangHelper.GetString("filename").Trim());
+            if (strOptional != null)
+            {
+                Console.Write(" [");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write(strOptional);
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.Write(LangHelper.GetString("outputfile").Trim());
+                Console.WriteLine("]");
+            }
+        }
+
         static void Usage()
         {
+
             // ResourceManager stringManager;
             // stringManager = new ResourceManager("es-ES", Assembly.GetExecutingAssembly());
             CultureInfo ci = CultureInfo.InstalledUICulture;
@@ -141,59 +168,21 @@ namespace EncDecFile
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine($"{LangHelper.GetString("usage")}: ");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("    EncDecFile ");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("-d ");
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write(LangHelper.GetString("filename"));
-            Console.Write($" [");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("-o ");
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write(LangHelper.GetString("outputfile"));
-            Console.WriteLine("]");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("    EncDecFile ");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("-e ");
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write(LangHelper.GetString("filename"));
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write(" [");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("-o ");
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write(LangHelper.GetString("outputfile"));
-            Console.WriteLine("]");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("    EncDecFile ");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("-a ");
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write(LangHelper.GetString("filename"));
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write(" [");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("-o ");
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write(LangHelper.GetString("outputfile"));
-            Console.WriteLine("]");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("    EncDecFile ");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("-s ");
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine(LangHelper.GetString("string"));
+            PrintOption("-d | --decrypt", "filename", "-o | --output ", "outputfile");
+            PrintOption("-e | --encrypt", "filename", "-o | --output ", "outputfile");
+            PrintOption("-a | --auto", "filename", "-o | --output ", "outputfile");
+            PrintOption("-i | --interactive", "filename", "-o | --output ", "outputfile");
+            PrintOption("-s | --string", "string");
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine($"{LangHelper.GetString("options")} :");
-            Console.WriteLine($"-d {LangHelper.GetString("filename")}       {LangHelper.GetString("d_opt_desc")}.");
-            Console.WriteLine($"-e {LangHelper.GetString("filename")}       {LangHelper.GetString("e_opt_desc")}.");
-            Console.WriteLine($"-a {LangHelper.GetString("filename")}       {LangHelper.GetString("a_opt_desc")}.");
-            Console.WriteLine($"                  {LangHelper.GetString("a_opt_desc2")}.");
-            Console.WriteLine($"-o {LangHelper.GetString("outputfile")} {LangHelper.GetString("o_opt_desc")}.");
-            Console.WriteLine($"                  {LangHelper.GetString("o_opt_desc2")}.");
-            Console.WriteLine($"-s {LangHelper.GetString("string")}         {LangHelper.GetString("s_opt_desc")}.");
+            Console.WriteLine($"-d | --decrypt {LangHelper.GetString("filename")}\t\t{LangHelper.GetString("d_opt_desc")}.");
+            Console.WriteLine($"-e | --encrypt {LangHelper.GetString("filename")}\t\t{LangHelper.GetString("e_opt_desc")}.");
+            Console.WriteLine($"-a | --auto {LangHelper.GetString("filename")}\t\t{LangHelper.GetString("a_opt_desc")}.");
+            Console.WriteLine($"-i | --interactive {LangHelper.GetString("filename")}\t{LangHelper.GetString("a_opt_desc")}.");
+            Console.WriteLine($"\t{LangHelper.GetString("a_opt_desc2")}");
+            Console.WriteLine($"-o | --output {LangHelper.GetString("outputfile")} {LangHelper.GetString("o_opt_desc")}.");
+            Console.WriteLine($"\t{LangHelper.GetString("o_opt_desc2")}.");
+            Console.WriteLine($"-s | --string {LangHelper.GetString("string")}\t\t{LangHelper.GetString("s_opt_desc")}.");
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.Write("Third ");
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -226,15 +215,15 @@ namespace EncDecFile
             return outputFilename;
         }
 
-        static int processFile(OperationType op, string inputFilename, string outputFilename)
+        static int ProcessFile(OperationType op, string inputFilename, string outputFilename)
         {
             string[] lines = File.ReadAllLines(inputFilename);
             string candidateString = null;
 
             bool foundAdd = false;
-            int  foundAddAt = 0;
+            int foundAddAt = 0;
             bool foundCandidateString = false;
-            int  foundCandidateStringAt = 0;
+            int foundCandidateStringAt = 0;
 
             OperationType encDec = op;
             int foundStringAt = 0;
@@ -249,7 +238,8 @@ namespace EncDecFile
 
             PrintInfo($"{LangHelper.GetString("output_file")}: ", outputFilename);
 
-            using (StreamWriter outputFile = new StreamWriter(outputFilename)) {
+            using (StreamWriter outputFile = new StreamWriter(outputFilename))
+            {
                 foundAdd = false;
                 foundCandidateString = false;
 
@@ -268,19 +258,21 @@ namespace EncDecFile
                 }
 
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.Write($"{LangHelper.GetString("processing")}: "); 
+                Console.Write($"{LangHelper.GetString("processing")}: ");
                 Console.ForegroundColor = ConsoleColor.White;
 
-                foreach (string line in lines) {
+                foreach (string line in lines)
+                {
                     /* You need to look for 'add' and after a 
                      * 'connectionString' the next string after is the connection string 
                      *  or look for 'value' after a 'appSetting'
                      */
                     foundAddAt = line.IndexOf("add", System.StringComparison.Ordinal);
-                    if (foundAddAt != -1) {
+                    if (foundAddAt != -1)
+                    {
                         foundAdd = true;
                     }
- 
+
                     int foundConnectionStringAt = line.IndexOf("connectionString", StringComparison.Ordinal);
                     int foundValueStringAt = line.IndexOf("value", StringComparison.Ordinal);
                     if (foundValueStringAt >= 0)
@@ -292,7 +284,8 @@ namespace EncDecFile
                     {
                         foundCandidateStringAt = foundConnectionStringAt;
                     }
-                    if (foundCandidateStringAt != -1 && foundCandidateStringAt > foundAddAt && foundAdd == true) {
+                    if (foundCandidateStringAt != -1 && foundCandidateStringAt > foundAddAt && foundAdd == true)
+                    {
                         // the 'connectionString' or 'value' must come after the 'add' key
                         foundCandidateString = true;
                     }
@@ -303,7 +296,8 @@ namespace EncDecFile
                         if (foundStringAt != -1 && foundStringAt > foundCandidateStringAt)
                         {
                             int j = foundStringAt + 1;
-                            while (j < line.Length && !line[j].Equals('"')) {
+                            while (j < line.Length && !line[j].Equals('"'))
+                            {
                                 //Console.Write(line[j]);
                                 j++;
                             }
@@ -363,7 +357,7 @@ namespace EncDecFile
                                     ++numEncrypted;
                                     PrintProgress("e");
                                 }
-                                catch 
+                                catch
                                 {
                                     // Ignore and cary on processing file, just puke out input line
                                     result = candidateString;
@@ -373,12 +367,13 @@ namespace EncDecFile
                             if (encDec == OperationType.Decrypt)
                             {
                                 // We want to decrypt
-                                try { 
+                                try
+                                {
                                     result = enc.Decrypt(candidateString, true);
                                     ++numDecrypted;
                                     PrintProgress("d");
                                 }
-                                catch 
+                                catch
                                 {
                                     // Ignore and cary on processing file, just puke out input line
                                     result = candidateString;
@@ -395,7 +390,8 @@ namespace EncDecFile
                             string str3 = line.Substring(foundStringAt + candidateString.Length + 1,
                                 (line.Length - (foundStringAt + candidateString.Length + 1)));
 
-                            try {
+                            try
+                            {
                                 outputFile.Write(str1);
                                 outputFile.Write(str2);
                                 outputFile.WriteLine(str3);
@@ -403,7 +399,7 @@ namespace EncDecFile
                             catch (Exception ex)
                             {
                                 errno = -1;
-                                PrintError(outputFilename, LangHelper.GetString("error_processing_file"), ex.Message);  
+                                PrintError(outputFilename, LangHelper.GetString("error_processing_file"), ex.Message);
                             }
 
                             // Reset values and search for next
@@ -412,7 +408,8 @@ namespace EncDecFile
                             candidateString = null;
                         }
                     }
-                    else {
+                    else
+                    {
                         // Found nothing, just writ eline
                         try
                         {
@@ -435,16 +432,16 @@ namespace EncDecFile
             if (numDecrypted > 0)
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.Write($"{LangHelper.GetString("decrypted")} (d): "); 
+                Console.Write($"{LangHelper.GetString("decrypted")} (d): ");
                 Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine(numDecrypted + $" {LangHelper.GetString("string")}" + (numDecrypted == 1 ? "" : "s"));
             }
             if (numTryDecrypted > 0)
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.Write($"{LangHelper.GetString("tried_decrypt")} (=): "); 
+                Console.Write($"{LangHelper.GetString("tried_decrypt")} (=): ");
                 Console.ForegroundColor = ConsoleColor.Magenta;
-                Console.WriteLine(numTryDecrypted + $" {LangHelper.GetString("string")}" + (numTryDecrypted == 1 ? "" : "s")); 
+                Console.WriteLine(numTryDecrypted + $" {LangHelper.GetString("string")}" + (numTryDecrypted == 1 ? "" : "s"));
 
             }
             if (numEncrypted > 0)
@@ -455,7 +452,7 @@ namespace EncDecFile
                 Console.WriteLine(numEncrypted + $" {LangHelper.GetString("string")}" + (numEncrypted == 1 ? "" : "s"));
             }
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.Write($" {LangHelper.GetString("from_a_total_of")}: "); 
+            Console.Write($" {LangHelper.GetString("from_a_total_of")}: ");
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine((numEncrypted + numDecrypted + numOther) + " lines");
             Console.ForegroundColor = ConsoleColor.Green;
@@ -472,12 +469,13 @@ namespace EncDecFile
             FileAttributes attr = File.GetAttributes(path);
 
             //detect whether its a directory or file
-            if ((attr & FileAttributes.Directory) == FileAttributes.Directory) {
+            if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+            {
                 return true;
             }
             return false;
         }
-  
+
 
         static (string, OperationType) EncryptDecryptString(string argumentString)
         {
@@ -490,11 +488,12 @@ namespace EncDecFile
                 stringIsEncrypted = true; // I got here, so it did not fail (string is encrypted)
                 return (decryptedString, OperationType.Decrypt);
             }
-            catch  
+            catch
             {
                 // Ignore
             }
-            if (!stringIsEncrypted) { 
+            if (!stringIsEncrypted)
+            {
                 // Do not try to encrypt an already encrypted string
                 try
                 {
@@ -531,7 +530,8 @@ namespace EncDecFile
                             opts.InputFile = args[++i];
                             opts.Operation = OperationType.Auto;
                         }
-                        else {
+                        else
+                        {
                             opts.Operation = OperationType.Error;
                             PrintError($"{LangHelper.GetString("error")}", $"{LangHelper.GetString("missing_option")} infile (-a | --auto)", $"{LangHelper.GetString("see_help")} (-h | --help)");
                         }
@@ -544,7 +544,8 @@ namespace EncDecFile
                             opts.InputFile = args[++i];
                             opts.Operation = OperationType.Decrypt;
                         }
-                        else {
+                        else
+                        {
                             opts.Operation = OperationType.Error;
                             PrintError($"{LangHelper.GetString("error")}", $"{LangHelper.GetString("missing_option")} infile (-d | --decrypt)", $"{LangHelper.GetString("see_help")} (-h | --help)");
                         }
@@ -571,11 +572,12 @@ namespace EncDecFile
                             opts.InputFile = args[++i];
                             opts.Operation = OperationType.Interactive;
                         }
-                        else {
+                        else
+                        {
                             opts.Operation = OperationType.Error;
                             PrintError($"{LangHelper.GetString("error")}", $"{LangHelper.GetString("missing_option")} infile (-i | --interactive)", $"{LangHelper.GetString("see_help")} (-h | --help)");
                         }
-                        
+
                         break;
 
                     case "-o":
@@ -620,12 +622,14 @@ namespace EncDecFile
             int errno = 0;
 
             Opts opt = GetArgs(args);
-            if (opt.Operation == OperationType.Error) {
+            if (opt.Operation == OperationType.Error)
+            {
                 Usage();
                 return;
             }
 
-            if (opt.Operation == OperationType.SimpleString) {
+            if (opt.Operation == OperationType.SimpleString)
+            {
                 // We just want to encrypt / decrypt a string.
                 string str;
                 OperationType op = OperationType.Error;
@@ -634,10 +638,10 @@ namespace EncDecFile
                     (str, op) = EncryptDecryptString(opt.SimpleString);
                     switch (op)
                     {
-                        case OperationType.Decrypt:
+                        case OperationType.Encrypt:
                             PrintInfo($"{LangHelper.GetString("encrypted_string")}: ", str);
                             break;
-                        case OperationType.Encrypt:
+                        case OperationType.Decrypt:
                             PrintInfo($"{LangHelper.GetString("decrypted_string")}: ", str);
                             break;
                         default:
@@ -697,7 +701,7 @@ namespace EncDecFile
 
                 try
                 {
-                    errno = processFile(opt.Operation, opt.InputFile, opt.OutputFile);
+                    errno = ProcessFile(opt.Operation, opt.InputFile, opt.OutputFile);
                     // the code that you want to measure comes here
                 }
                 catch (FileNotFoundException ex)
@@ -717,7 +721,7 @@ namespace EncDecFile
                 if (errno != 0)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Write($" ({LangHelper.GetString("with_errors")})"); 
+                    Console.Write($" ({LangHelper.GetString("with_errors")})");
                 }
 
 
@@ -738,7 +742,7 @@ namespace EncDecFile
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(".");
             Console.ForegroundColor = ConsoleColor.White;
-            
+
             return;
         }
     }
